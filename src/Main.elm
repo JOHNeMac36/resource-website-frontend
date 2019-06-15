@@ -127,6 +127,7 @@ type alias Model =
     , users : Dict UserId User
     , users_status : Network ()
     , user_edit : PartialUser
+    , user_search : PartialUser
     , user_new_access : Maybe Int
     }
 
@@ -140,6 +141,12 @@ init _ url key =
       , users = Dict.empty
       , users_status = Loading
       , user_edit =
+            { first_name = Nothing
+            , last_name = Nothing
+            , banner_id = Nothing
+            , email = Nothing
+            }
+      , user_search =
             { first_name = Nothing
             , last_name = Nothing
             , banner_id = Nothing
@@ -162,12 +169,16 @@ type Msg
     | GotUsers (Result Http.Error (List User))
     | GotUser (Result Http.Error User)
     | EditUserFirstName String
+    | SearchUserFirstName String
     | ResetUserFirstName
     | EditUserLastName String
+    | SearchUserLastName String
     | ResetUserLastName
     | EditUserBannerId Int
+    | SearchUserBannerId Int
     | ResetUserBannerId
     | EditUserEmail String
+    | SearchUserEmail String
     | ResetUserEmail
     | SubmitEditUser
     | Updated (Result Http.Error ())
@@ -230,6 +241,13 @@ update msg model =
             in
             ( { model | user_edit = { partial_user | first_name = Just first_name } }, Cmd.none )
 
+        SearchUserFirstName first_name ->
+            let
+                partial_user =
+                    model.user_search
+            in
+            ( { model | user_search = { partial_user | first_name = Just first_name } }, Cmd.none )
+
         ResetUserFirstName ->
             let
                 partial_user =
@@ -243,6 +261,13 @@ update msg model =
                     model.user_edit
             in
             ( { model | user_edit = { partial_user | last_name = Just last_name } }, Cmd.none )
+
+        SearchUserLastName last_name ->
+            let
+                partial_user =
+                    model.user_search
+            in
+            ( { model | user_search = { partial_user | last_name = Just last_name } }, Cmd.none )
 
         ResetUserLastName ->
             let
@@ -258,6 +283,13 @@ update msg model =
             in
             ( { model | user_edit = { partial_user | banner_id = Just banner_id } }, Cmd.none )
 
+        SearchUserBannerId banner_id ->
+            let
+                partial_user =
+                    model.user_edit
+            in
+            ( { model | user_search = { partial_user | banner_id = Just banner_id } }, Cmd.none )
+
         ResetUserBannerId ->
             let
                 partial_user =
@@ -271,6 +303,13 @@ update msg model =
                     model.user_edit
             in
             ( { model | user_edit = { partial_user | email = Just email } }, Cmd.none )
+
+        SearchUserEmail email ->
+            let
+                partial_user =
+                    model.user_search
+            in
+            ( { model | user_search = { partial_user | email = Just email } }, Cmd.none )
 
         ResetUserEmail ->
             let
