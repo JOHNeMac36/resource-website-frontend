@@ -32,7 +32,7 @@ import Tests.List
         , questionCategoryListDecoder
         )
 import Tests.New
-import Tests.Session
+import Sessions.Session
 import Time
 import Url
 import Url.Builder as B
@@ -76,7 +76,7 @@ type Route
     | UserNew
     | Tests
     | TestNew
-    | Session Tests.Session.Id
+    | Session Sessions.Session.Id
     | NotFound
 
 
@@ -104,8 +104,8 @@ type alias Model =
     , question_categories : Dict QuestionCategoryId QuestionCategory
     , tests : Dict Tests.List.Id Tests.List.Test
     , test_new : Tests.New.State
-    , registrations : Dict Tests.Session.RegistrationId Tests.Session.Registration
-    , sessions : Dict Tests.Session.Id Tests.Session.Session
+    , registrations : Dict Sessions.Session.RegistrationId Sessions.Session.Registration
+    , sessions : Dict Sessions.Session.Id Sessions.Session.Session
     , requests : Set String
     , notifications : List Notification
     }
@@ -161,11 +161,11 @@ type Msg
     | GotUser User.Id (Result Http.Error User.User)
     | GotTests (Result Http.Error (List Tests.List.Test))
     | GotQuestionCategories (Result Http.Error (List QuestionCategory))
-    | GotSession Tests.Session.Id (Result Http.Error Tests.Session.Session)
+    | GotSession Sessions.Session.Id (Result Http.Error Sessions.Session.Session)
     | UserDetailMsg Users.Detail.Msg
     | UserNewMsg Users.New.Msg
     | TestNewMsg Tests.New.Msg
-    | SessionMsg Tests.Session.Msg
+    | SessionMsg Sessions.Session.Msg
     | Updated (Result Http.Error ())
     | CloseNotification Int
 
@@ -356,7 +356,7 @@ update msg model =
                         | sessions = Dict.insert session.id session model.sessions
                         , requests =
                             handleRequestChanges
-                                [ RemoveRequest (Tests.Session.url id) ]
+                                [ RemoveRequest (Sessions.Session.url id) ]
                                 model.requests
                     }
 
@@ -364,7 +364,7 @@ update msg model =
                     { model
                         | requests =
                             handleRequestChanges
-                                [ RemoveRequest (Tests.Session.url id) ]
+                                [ RemoveRequest (Sessions.Session.url id) ]
                                 model.requests
                     }
             , Cmd.none
@@ -493,7 +493,7 @@ update msg model =
                     -- TODO Make this prettier
                     let
                         response =
-                            Tests.Session.update
+                            Sessions.Session.update
                                 id_token
                                 session_msg
                                 id
@@ -707,13 +707,13 @@ loadData session route =
                     ( Http.request
                         { method = "GET"
                         , headers = [ header "id_token" id_token ]
-                        , url = Tests.Session.url session_id
+                        , url = Sessions.Session.url session_id
                         , body = emptyBody
-                        , expect = Http.expectJson (GotSession session_id) Tests.Session.decoder
+                        , expect = Http.expectJson (GotSession session_id) Sessions.Session.decoder
                         , timeout = Nothing
-                        , tracker = Just (Tests.Session.url session_id)
+                        , tracker = Just (Sessions.Session.url session_id)
                         }
-                    , [ AddRequest (Tests.Session.url session_id) ]
+                    , [ AddRequest (Sessions.Session.url session_id) ]
                     , []
                     )
 
@@ -755,7 +755,7 @@ viewPage model =
         Session session_id ->
             case Dict.get session_id model.sessions of
                 Just session ->
-                    Tests.Session.view model.timezone model.users session |> Html.map SessionMsg
+                    Sessions.Session.view model.timezone model.users session |> Html.map SessionMsg
 
                 Nothing ->
                     p [] [ text "Test session not found" ]
